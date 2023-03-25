@@ -1,0 +1,27 @@
+[package]
+name = "clean-hotel-backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = { version = "2.0.3", features = ["r2d2", "sqlite", "chrono", "returning_clauses_for_sqlite_3_35"] }
+dotenvy = "0.15.1"
+serde = { version = "^1", features = ["derive"] }
+diesel_migrations = { version = "2.0.0" }
+r2d2 = { version = "0.8.10" }
+actix-web = {version = "4.3.1", features = ["openssl"] }
+actix-cors = { version = "0.6.4" }
+actix-rt = { version = "2.8.0" }
+futures = { version = "0.3" }
+futures-util = { version = "0.3" }
+openssl = { version = "0.10.45" }
+actix-web-lab = { version = "^0" }
+derive_more = { version = "^0.99" }
+hex = {version = "0.4.3"}
+argon2 = { version = "0.5.0" }
+rand = { version = "0.8.5" }
+jwt-simple = { version = "0.11.4" }
+jsonwebtoken = { version = "8.2.0" }
+chrono = { version = "0.4.24" }
