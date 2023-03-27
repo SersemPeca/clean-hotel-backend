@@ -4,11 +4,11 @@ use crate::db::{
 };
 use diesel::prelude::*;
 
-pub fn create_cleaner(conns: &DbPool, room: &NewCleaner) -> Option<usize> {
+pub fn create_cleaner(conns: &DbPool, cleaner: &NewCleaner) -> Option<usize> {
     use crate::db::schema::cleaners;
 
         diesel::insert_into(cleaners::table)
-        .values(room)
+        .values(cleaner)
         .returning(cleaners::id)
         .execute(&mut conns.get().unwrap())
         .ok()

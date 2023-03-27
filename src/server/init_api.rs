@@ -7,6 +7,7 @@ pub fn init_routes(config: &mut web::ServiceConfig) {
         // Cleaners Controller
         .service(api::cleaners_controller::take_room)
         .service(api::cleaners_controller::free_room)
+        .service(api::cleaners_controller::add_cleaner)
         // Auth Controller
         .service(api::auth_controller::auth)
         // Rooms controller

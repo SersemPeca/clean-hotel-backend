@@ -5,6 +5,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use crate::auth_utils::extraction::{TokenPayload, MaybeTokenPayload};
+use crate::db::models::cleaner::NewCleaner;
 
 #[post("/cleaners/take/{roomdId}")]
 async fn take_room(
@@ -43,6 +44,7 @@ async fn take_room(
         },
     }
 }
+
 
 #[post("/cleaners/free/{roomdId}")]
 async fn free_room(
@@ -85,4 +87,49 @@ async fn free_room(
             }
         },
     }
+}
+
+#[derive(Deserialize, Serialize)]
+struct NewCleanerData {
+    username: String,
+    password: String,
+    name: String,
+}
+
+//NOTE: For testing purposes only
+#[post("cleaners/add")]
+async fn add_cleaner(req: HttpRequest, body: web::Json<NewCleanerData>) -> impl Responder {
+   use crate::api::util::{generate_salt, hash_password};
+   use crate::db::crud::cleaners::create_cleaner;
+   use crate::db::models::cleaner::NewCleaner;
+
+   let Some(conns) = req.app_data::<DbPool>() else {
+       return HttpResponse::InternalServerError().body("Could not connect to the DB");
+   };
+
+   let NewCleanerData { username, password, name } = &*body;
+
+   let salt = generate_salt();
+
+   let Ok(password_hash) = hash_password(password.clone(), salt) else {
+       return HttpResponse::InternalServerError().body("Could not hash password");
+   };
+
+   let new_cleaner = NewCleaner {
+       username,
+       password: &password_hash,
+       name,
+   };
+
+   match create_cleaner(conns, &new_cleaner) {
+       Some(res) => {
+           HttpResponse::Ok().json(res)
+       }
+
+       None => {
+           HttpResponse::InternalServerError().body("Could not insert cleaner into database")
+       }
+   }
+
+
 }
