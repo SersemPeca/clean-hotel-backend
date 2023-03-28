@@ -26,8 +26,6 @@ impl PartialEq for Room {
 #[derive(Insertable)]
 #[diesel(table_name = rooms)]
 pub struct NewRoom {
-    #[diesel(column_name = id)]
-    pub id: i32,
 
     #[diesel(column_name = cleaner)]
     pub cleaner: Option<i32>,

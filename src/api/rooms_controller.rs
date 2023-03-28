@@ -51,6 +51,39 @@ async fn get_room_by_id(
     HttpResponse::Ok().json(room)
 }
 
+
+#[post("/rooms/add")]
+async fn add_room(
+    req: HttpRequest,
+    auth_payload: web::Json<MaybeTokenPayload>,
+) -> impl Responder {
+    use crate::db::crud::rooms::*;
+    use crate::db::models::room::NewRoom;
+
+    let token = &*auth_payload;
+
+    let Some( TokenPayload { user_id, is_admin, } ) = token else {
+        return HttpResponse::InternalServerError().body("You did not provide an auth token!");
+    };
+
+    let Some(conns) = req.app_data::<DbPool>() else {
+        return HttpResponse::InternalServerError().body("Could not connect to database");
+    };
+
+    let new_room = NewRoom {
+       cleaner: None, 
+    };
+
+    if is_admin {
+        let res = create_room(conns, &new_room);
+
+        HttpResponse::Ok().json(res)
+    }
+    else {
+        HttpResponse::Unauthorized().body("You are not an administrator!")
+    }
+}
+
 #[get("/rooms/my")]
 async fn get_cleaner_rooms(
     req: HttpRequest,
