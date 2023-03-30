@@ -24,7 +24,7 @@ struct Info {
 async fn admin_assign(
     req: HttpRequest,
     path_var: web::Path<Info>,
-    TokenPayload { user_id, is_admin }: TokenPayload,
+    TokenPayload { user_id , is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::cleaners::read_cleaner_by_id;
     use crate::db::crud::rooms::{ read_room_by_id, update_room_cleaner };

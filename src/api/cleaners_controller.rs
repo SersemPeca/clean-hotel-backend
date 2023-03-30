@@ -89,39 +89,48 @@ struct NewCleanerData {
     name: String,
 }
 
-//NOTE: For testing purposes only
 #[post("cleaners/add")]
-async fn add_cleaner(req: HttpRequest, body: web::Json<NewCleanerData>) -> impl Responder {
-   use crate::api::util::{generate_salt, hash_password};
-   use crate::db::crud::cleaners::create_cleaner;
-   use crate::db::models::cleaner::NewCleaner;
+async fn add_cleaner(
+    req: HttpRequest, 
+    body: web::Json<NewCleanerData>,
+    TokenPayload { user_id, is_admin }: TokenPayload,
+    ) -> impl Responder {
+       use crate::api::util::{generate_salt, hash_password};
+       use crate::db::crud::cleaners::create_cleaner;
+       use crate::db::models::cleaner::NewCleaner;
 
-   let Some(conns) = req.app_data::<DbPool>() else {
-       return HttpResponse::InternalServerError().body("Could not connect to the DB");
-   };
 
-   let NewCleanerData { username, password, name } = &*body;
+       let Some(conns) = req.app_data::<DbPool>() else {
+           return HttpResponse::InternalServerError().body("Could not connect to the DB");
+       };
 
-   let salt = generate_salt();
+       let NewCleanerData { username, password, name } = &*body;
 
-   let Ok(password_hash) = hash_password(password.clone(), salt) else {
-       return HttpResponse::InternalServerError().body("Could not hash password");
-   };
+       let salt = generate_salt();
 
-   let new_cleaner = NewCleaner {
-       username,
-       password: &password_hash,
-       name,
-   };
+       let Ok(password_hash) = hash_password(password.clone(), salt) else {
+           return HttpResponse::InternalServerError().body("Could not hash password");
+       };
 
-   match create_cleaner(conns, &new_cleaner) {
-       Some(res) => {
-           HttpResponse::Ok().json(res)
+       let new_cleaner = NewCleaner {
+           username,
+           password: &password_hash,
+           name,
+       };
+
+       if is_admin {
+
+           match create_cleaner(conns, &new_cleaner) {
+               Some(res) => {
+                   HttpResponse::Ok().json(res)
+               }
+
+               None => {
+                   HttpResponse::InternalServerError().body("Could not insert cleaner into database")
+               }
        }
-
-       None => {
-           HttpResponse::InternalServerError().body("Could not insert cleaner into database")
-       }
+   } else {
+       HttpResponse::Unauthorized().body("You are not an administrator!")
    }
 
 
