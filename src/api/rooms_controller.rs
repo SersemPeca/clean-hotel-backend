@@ -9,13 +9,9 @@ use crate::auth_utils::extraction::{TokenPayload, MaybeTokenPayload};
 #[get("/rooms/all")]
 async fn get_all_rooms(
     req: HttpRequest,
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
-
-    let Some(_) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
-    };
 
     let Some(conns) = req.app_data::<DbPool>() else {
         return HttpResponse::InternalServerError().body("Could not connect to database");
@@ -32,13 +28,9 @@ async fn get_all_rooms(
 async fn get_room_by_id(
     req: HttpRequest,
     room_id: web::Path<i32>, 
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
-
-    let Some(_) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
-    };
 
     let Some(conns) = req.app_data::<DbPool>() else {
         return HttpResponse::InternalServerError().body("Could not connect to database");
@@ -52,19 +44,14 @@ async fn get_room_by_id(
 }
 
 
+// Actix will automatically require the presence of a token so there is no need for MaybeTokenPayload
 #[post("/rooms/add")]
 async fn add_room(
     req: HttpRequest,
-    auth_payload: web::Json<MaybeTokenPayload>,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
     use crate::db::models::room::NewRoom;
-
-    let token = &*auth_payload;
-
-    let Some( TokenPayload { user_id, is_admin, } ) = token else {
-        return HttpResponse::InternalServerError().body("You did not provide an auth token!");
-    };
 
     let Some(conns) = req.app_data::<DbPool>() else {
         return HttpResponse::InternalServerError().body("Could not connect to database");
@@ -87,13 +74,9 @@ async fn add_room(
 #[get("/rooms/my")]
 async fn get_cleaner_rooms(
     req: HttpRequest,
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
-
-    let Some(TokenPayload { user_id, is_admin }) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
-    };
 
     let Some(conns) = req.app_data::<DbPool>() else {
         return HttpResponse::InternalServerError().body("Could not connect to database");
@@ -109,13 +92,9 @@ async fn get_cleaner_rooms(
 #[get("/rooms/free")]
 async fn get_free_rooms(
     req: HttpRequest,
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
-
-    let Some(_) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
-    };
 
     let Some(conns) = req.app_data::<DbPool>() else {
         return HttpResponse::InternalServerError().body("Could not connect to database");

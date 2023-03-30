@@ -11,6 +11,7 @@ mod server;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    //dotenvy::dotenv().ok();
     std::env::set_var("RUST_LOG", "debug");
 
     // Start http server

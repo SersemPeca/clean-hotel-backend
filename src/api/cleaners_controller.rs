@@ -11,7 +11,7 @@ use crate::db::models::cleaner::NewCleaner;
 async fn take_room(
     req: HttpRequest,
     path_var: web::Path<i32>,
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 
@@ -23,10 +23,6 @@ async fn take_room(
 
     let Some(room) = read_room_by_id(conns, roomId) else {
         return HttpResponse::InternalServerError().body("No such room exists");
-    };
-
-    let Some(TokenPayload { user_id, is_admin }) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
     };
 
     match room.cleaner {
@@ -50,7 +46,7 @@ async fn take_room(
 async fn free_room(
     req: HttpRequest,
     path_var: web::Path<i32>,
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 
@@ -62,10 +58,6 @@ async fn free_room(
 
     let Some(room) = read_room_by_id(conns, roomId) else {
         return HttpResponse::InternalServerError().body("No such room exists");
-    };
-
-    let Some(TokenPayload { user_id, is_admin }) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
     };
 
     match room.cleaner {

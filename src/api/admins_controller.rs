@@ -23,7 +23,7 @@ struct Info {
 async fn admin_assign(
     req: HttpRequest,
     path_var: web::Path<Info>,
-    MaybeTokenPayload(auth_payload): MaybeTokenPayload,
+    TokenPayload { user_id, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::cleaners::read_cleaner_by_id;
     use crate::db::crud::rooms::{ read_room_by_id, update_room_cleaner };
@@ -40,10 +40,6 @@ async fn admin_assign(
 
     let Some(cleaner) = read_cleaner_by_id(conns, path_info.cleaner_id) else {
         return HttpResponse::InternalServerError().body("No such cleaner exists");
-    };
-
-    let Some(TokenPayload { user_id, is_admin }) = auth_payload else {
-        return HttpResponse::InternalServerError().body("No token provided");
     };
 
     if is_admin {

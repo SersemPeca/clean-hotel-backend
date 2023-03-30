@@ -30,7 +30,7 @@ impl MaybeTokenPayload {
     }
 }
 
-impl FromRequest for MaybeTokenPayload {
+impl FromRequest for TokenPayload {
     type Error = ActixWebError;
     type Future = Ready<Result<Self, Self::Error>>;
 
@@ -59,7 +59,7 @@ impl FromRequest for MaybeTokenPayload {
 
         ready(
             token_result
-                .map(|token| MaybeTokenPayload::new(token.claims.user_id, token.claims.is_admin))
+                .map(|token| TokenPayload { user_id: token.claims.user_id, is_admin: token.claims.is_admin })
                 .map_err(|_| ErrorUnauthorized("Invalid authentication token")),
         )
     }
