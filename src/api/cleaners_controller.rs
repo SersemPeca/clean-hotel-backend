@@ -11,7 +11,7 @@ use crate::db::models::cleaner::NewCleaner;
 async fn take_room(
     req: HttpRequest,
     path_var: web::Path<i32>,
-    TokenPayload { user_id, is_admin }: TokenPayload,
+    TokenPayload { user_id, .. }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 
@@ -42,11 +42,12 @@ async fn take_room(
 }
 
 
+
 #[post("/cleaners/free/{roomdId}")]
 async fn free_room(
     req: HttpRequest,
     path_var: web::Path<i32>,
-    TokenPayload { user_id, is_admin }: TokenPayload,
+    TokenPayload { user_id, .. }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 

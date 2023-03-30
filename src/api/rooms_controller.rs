@@ -74,7 +74,7 @@ async fn add_room(
 #[get("/rooms/my")]
 async fn get_cleaner_rooms(
     req: HttpRequest,
-    TokenPayload { user_id, is_admin }: TokenPayload,
+    TokenPayload { user_id, ..}: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 
@@ -89,10 +89,10 @@ async fn get_cleaner_rooms(
     HttpResponse::Ok().json(rooms)
 }
 
-#[get("/rooms/free")]
+#[get("rooms/free")]
 async fn get_free_rooms(
     req: HttpRequest,
-    TokenPayload { user_id, is_admin }: TokenPayload,
+    //We only require the tokens presence
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 

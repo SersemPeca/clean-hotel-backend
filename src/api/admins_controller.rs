@@ -19,6 +19,7 @@ struct Info {
     cleaner_id: i32,
 }
 
+// http://localhost:8080/admins/assign/?rood_id=123,cleaner_id=123
 #[post("/admins/assign/{info}")]
 async fn admin_assign(
     req: HttpRequest,

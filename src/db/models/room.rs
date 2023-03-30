@@ -7,7 +7,7 @@ use crate::db::models::cleaner::Cleaner;
 #[derive(Associations, Identifiable, Queryable, Clone, Serialize, Deserialize, Debug)]
 #[diesel(table_name = rooms)]
 #[diesel(primary_key(id))]
-#[diesel(belongs_to(Cleaner, foreign_key = id))]
+#[diesel(belongs_to(Cleaner, foreign_key = cleaner))]
 #[diesel(treat_none_as_null = true)]
 pub struct Room {
     #[diesel(column_name = id)]
