@@ -17,6 +17,7 @@ pub fn init_routes(config: &mut web::ServiceConfig) {
         .service(api::rooms_controller::get_free_rooms)
         .service(api::rooms_controller::get_room_by_id)
         // Admins Controller
+        .service(api::admins_controller::admin_free_room)
         .service(api::admins_controller::admin_assign)
         ;
 }
