@@ -154,6 +154,14 @@ async fn admin_add(
     };
 
     let res = create_admin(conns, &new_admin);
-    HttpResponse::Ok().json(res)
+    
+    match res {
+        Some(rez) => {
+            HttpResponse::Ok().json(rez)
+        }
+        _ => {
+            HttpResponse::InternalServerError().body("Could not create admin")
+        }
+    }
 
 }

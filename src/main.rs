@@ -2,7 +2,7 @@
 extern crate diesel;
 
 use actix_cors::Cors;
-use actix_web::{App, HttpServer};
+use actix_web::{middleware::Logger, App, HttpServer};
 use std::{collections::HashMap, time::Duration};
 use actix_rt::time;
 
@@ -14,6 +14,7 @@ mod server;
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
+    env_logger::init();
     std::env::set_var("RUST_LOG", "debug");
 
     actix_rt::spawn(async move {
@@ -35,9 +36,11 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let cors = Cors::permissive().allow_any_origin();
         let pool = db::util::establish_connection().expect("Couldn't create DB pool");
+        let logger = Logger::default();
 
         App::new()
             .wrap(cors)
+            .wrap(logger)
             .app_data(pool)
             .configure(server::init_api::init_routes)
     })
