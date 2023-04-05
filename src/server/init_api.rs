@@ -13,12 +13,16 @@ pub fn init_routes(config: &mut web::ServiceConfig) {
         // Rooms controller
         .service(api::rooms_controller::get_all_rooms)
         .service(api::rooms_controller::add_room)
+        .service(api::rooms_controller::get_dirty_rooms)
+        .service(api::rooms_controller::get_rooms_to_display)
         .service(api::rooms_controller::get_cleaner_rooms)
         .service(api::rooms_controller::get_free_rooms)
         .service(api::rooms_controller::get_room_by_id)
         // Admins Controller
         .service(api::admins_controller::admin_free_room)
         .service(api::admins_controller::admin_assign)
+        .service(api::admins_controller::admin_add)
+        .service(api::admins_controller::admin_set_room_dirty)
         ;
 }
 

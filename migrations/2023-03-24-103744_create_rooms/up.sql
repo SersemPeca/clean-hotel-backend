@@ -2,6 +2,8 @@
 CREATE TABLE rooms (
 	id INTEGER NOT NULL,
 	cleaner INTEGER,
+    clean BOOLEAN NOT NULL DEFAULT FALSE,
+    description VARCHAR,
 	CONSTRAINT rooms_pk
 		PRIMARY KEY (id)
 	CONSTRAINT cleaner_fk

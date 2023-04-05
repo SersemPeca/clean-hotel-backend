@@ -1,15 +1,13 @@
 use crate::db::util::DbPool;
 
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
-use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, EncodingKey, Header};
+use crate::auth_utils::extraction::{TokenPayload};
 use serde::{Deserialize, Serialize};
-use crate::auth_utils::extraction::{TokenPayload, MaybeTokenPayload};
 
 #[get("/rooms/all")]
 async fn get_all_rooms(
     req: HttpRequest,
-    TokenPayload { user_id, is_admin }: TokenPayload,
+    TokenPayload { user_id: _, is_admin }: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 
@@ -43,12 +41,17 @@ async fn get_room_by_id(
     HttpResponse::Ok().json(room)
 }
 
+#[derive(Deserialize)]
+struct NewRoomData {
+    description: String,
+}
 
 // Actix will automatically require the presence of a token so there is no need for MaybeTokenPayload
 #[post("/rooms/add")]
 async fn add_room(
     req: HttpRequest,
     TokenPayload { user_id, is_admin }: TokenPayload,
+    body: web::Json<NewRoomData>,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
     use crate::db::models::room::NewRoom;
@@ -57,8 +60,11 @@ async fn add_room(
         return HttpResponse::InternalServerError().body("Could not connect to database");
     };
 
+    let NewRoomData { description } = &*body;
+
     let new_room = NewRoom {
        cleaner: None, 
+       description: Some(&description),
     };
 
     if is_admin {
@@ -89,10 +95,11 @@ async fn get_cleaner_rooms(
     HttpResponse::Ok().json(rooms)
 }
 
-#[get("rooms/free")]
+#[get("/rooms/free")]
 async fn get_free_rooms(
     req: HttpRequest,
     //We only require the tokens presence
+    _token: TokenPayload,
 ) -> impl Responder {
     use crate::db::crud::rooms::*;
 
@@ -102,6 +109,43 @@ async fn get_free_rooms(
 
     let Some(rooms) = read_free_rooms(conns) else {
         return HttpResponse::InternalServerError().body("No such room exists");
+    };
+
+    HttpResponse::Ok().json(rooms)
+}
+
+// Get rooms that still need cleaning
+#[get("/rooms/dirty")]
+async fn get_dirty_rooms(
+    req: HttpRequest,
+    _token: TokenPayload,
+    ) -> impl Responder {
+    use crate::db::crud::rooms::read_dirty_rooms;
+
+    let Some(conns) = req.app_data::<DbPool>() else {
+        return HttpResponse::InternalServerError().body("Could not connect to database");
+    };
+
+    let Some(rooms) = read_dirty_rooms(conns) else {
+        return HttpResponse::InternalServerError().body("No dirty rooms");
+    };
+
+    HttpResponse::Ok().json(rooms)
+}
+
+#[get("/rooms/display")]
+async fn get_rooms_to_display(
+    req: HttpRequest,
+    _token: TokenPayload,
+    ) -> impl Responder {
+    use crate::db::crud::rooms::read_rooms_to_display;
+
+    let Some(conns) = req.app_data::<DbPool>() else {
+        return HttpResponse::InternalServerError().body("Could not connect to database");
+    };
+
+    let Some(rooms) = read_rooms_to_display(conns) else {
+        return HttpResponse::InternalServerError().body("No rooms to display");
     };
 
     HttpResponse::Ok().json(rooms)

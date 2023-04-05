@@ -15,6 +15,13 @@ pub struct Room {
 
     #[diesel(column_name = cleaner)]
     pub cleaner: Option<i32>,
+
+    #[diesel(column_name = clean)]
+    pub clean: bool,
+
+    #[diesel(column_name = description)]
+    pub description: Option<String>,
+
 }
 
 impl PartialEq for Room {
@@ -23,10 +30,13 @@ impl PartialEq for Room {
     }
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Copy, Clone)]
 #[diesel(table_name = rooms)]
-pub struct NewRoom {
+pub struct NewRoom<'a> {
 
     #[diesel(column_name = cleaner)]
     pub cleaner: Option<i32>,
+
+    #[diesel(column_name = description)]
+    pub description: Option<&'a str>,
 }

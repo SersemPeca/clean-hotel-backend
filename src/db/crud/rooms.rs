@@ -31,12 +31,45 @@ pub fn read_room_by_id(conns: &DbPool, id: i32) -> Option<Room> {
         .ok()
 }
 
+pub fn read_rooms_to_display(conns: &DbPool) -> Option<Vec<Room>> {
+    use crate::db::schema::rooms;
+
+    rooms::table
+        .filter(rooms::cleaner.is_null())
+        .filter(rooms::clean.eq(false))
+        .get_results::<Room>(&mut conns.get().unwrap())
+        .ok()
+}
+
 pub fn update_room_cleaner(conns: &DbPool, id: i32, cleaner_id: i32) -> Option<usize> {
     use crate::db::schema::rooms;
 
     diesel::update(rooms::table)
         .filter(rooms::id.eq(id))
-        .set(rooms::cleaner.eq(cleaner_id))
+        .set(
+            (rooms::cleaner.eq(cleaner_id),
+            rooms::clean.eq(false),
+            ))
+        .execute(&mut conns.get().unwrap())
+        .ok()
+}
+
+pub fn update_room_to_be_cleaned_by_id(conns: &DbPool, id: i32) -> Option<usize> {
+    use crate::db::schema::rooms;
+
+    diesel::update(rooms::table)
+        .filter(rooms::id.eq(id))
+        .set(rooms::clean.eq(false))
+        .execute(&mut conns.get().unwrap())
+        .ok()
+}
+
+//NOTE: This is only used in the scheduler to update the rooms to be cleaned every 24 hours
+pub fn update_all_rooms_to_be_cleaned(conns: &DbPool) -> Option<usize> {
+    use crate::db::schema::rooms;
+
+    diesel::update(rooms::table)
+        .set(rooms::clean.eq(false))
         .execute(&mut conns.get().unwrap())
         .ok()
 }
@@ -46,6 +79,15 @@ pub fn read_free_rooms(conns: &DbPool) -> Option<Vec<Room>> {
 
     rooms::table
         .filter(rooms::cleaner.is_null())
+        .get_results::<Room>(&mut conns.get().unwrap())
+        .ok()
+}
+
+pub fn read_dirty_rooms(conns: &DbPool) -> Option<Vec<Room>> {
+    use crate::db::schema::rooms;
+
+    rooms::table
+        .filter(rooms::clean.eq(false))
         .get_results::<Room>(&mut conns.get().unwrap())
         .ok()
 }
@@ -60,27 +102,17 @@ pub fn read_rooms_by_cleaner_id(conns: &DbPool, cleaner_id: i32) -> Option<Vec<R
         .ok()
 }
 
+// This method frees the room AND sets it as "clean"
+// NOTE: Single responsibility here is not followed, will fix in the future
 pub fn free_room_by_id(conns: &DbPool, id: i32) -> Option<usize> {
     use crate::db::schema::rooms;
 
     diesel::update(rooms::table)
         .filter(rooms::id.eq(id))
-        .set(rooms::cleaner.eq::<Option<i32>>(None))
+        .set(
+            (rooms::cleaner.eq::<Option<i32>>(None), 
+            rooms::clean.eq::<bool>(true)),
+              )
         .execute(&mut conns.get().unwrap())
         .ok()
 }
-
-// pub fn read_transactions_by_user_id(conns: &DbPool, user_id: i32) -> Option<Vec<Transaction>> {
-//     use crate::db::schema::transactions;
-// 
-//     use crate::db::crud::users::read_user_by_id;
-// 
-//     let user = read_user_by_id(conns, user_id)?;
-// 
-//     UserTransaction::belonging_to(&user)
-//         .inner_join(transactions::table)
-//         .select(Transaction::as_select())
-//         .get_results::<Transaction>(&mut conns.get().unwrap())
-//         .ok()
-// }
-

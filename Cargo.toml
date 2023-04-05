@@ -25,3 +25,6 @@ rand = { version = "0.8.5" }
 jwt-simple = { version = "0.11.4" }
 jsonwebtoken = { version = "8.2.0" }
 chrono = { version = "0.4.24" }
+job_scheduler = "*"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }

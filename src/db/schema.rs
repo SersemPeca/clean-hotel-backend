@@ -22,6 +22,8 @@ diesel::table! {
     rooms (id) {
         id -> Integer,
         cleaner -> Nullable<Integer>,
+        clean -> Bool,
+        description -> Nullable<Text>,
     }
 }
 
