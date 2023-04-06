@@ -70,7 +70,14 @@ async fn add_room(
     if is_admin {
         let res = create_room(conns, &new_room);
 
-        HttpResponse::Ok().json(res)
+        match res {
+            Some(rez) => {
+                HttpResponse::Ok().json(rez)
+            }
+            _ => {
+                HttpResponse::InternalServerError().body("Could not create new room!")
+            }
+        }
     }
     else {
         HttpResponse::Unauthorized().body("You are not an administrator!")
